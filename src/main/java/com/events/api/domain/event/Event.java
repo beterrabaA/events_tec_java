@@ -1,9 +1,8 @@
 package com.events.api.domain.event;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.events.api.domain.address.Address;
+import com.events.api.domain.coupon.Coupon;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,5 +28,8 @@ public class Event {
     private String eventUrl;
     private boolean remote;
     private Date date;
+
+    @OneToOne(mappedBy = "event",cascade = CascadeType.ALL)
+    private Address address;
 
 }
