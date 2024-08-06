@@ -16,10 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class EventService {
@@ -34,6 +31,7 @@ public class EventService {
 
     @Autowired
     private EventRepository repository;
+
 
     public Event createEvent(EventRequestDTO data) {
         String imageUrl = null;
@@ -69,12 +67,41 @@ public class EventService {
                                 event.getTitle(),
                                 event.getDescription(),
                                 event.getDate(),
-                                "",
-                                "",
+                                event.getAddress() != null ? event.getAddress().getCity() : "",
+                                event.getAddress() != null ? event.getAddress().getUf() : "",
                                 event.isRemote(),
                                 event.getEventUrl(),
                                 event.getImageUrl()
                                 )).stream().toList();
+    }
+
+    public List<EventResponseDTO> getFilteredEvents(int page,
+                                                    int size,
+                                                    String title,
+                                                    String city,
+                                                    String uf,
+                                                    Date startDate,Date endDate){
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.YEAR,10);
+        startDate = (startDate !=null) ? startDate : new Date();
+        endDate = (endDate !=null) ? endDate : calendar.getTime();
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Event> eventPage = this.repository.findFilteredEvents(title,city,uf,startDate,endDate,pageable);
+        return eventPage
+                .map(event ->
+                        new EventResponseDTO(
+                                event.getId(),
+                                event.getTitle(),
+                                event.getDescription(),
+                                event.getDate(),
+                                event.getAddress() != null ? event.getAddress().getCity() : "",
+                                event.getAddress() != null ? event.getAddress().getUf() : "",
+                                event.isRemote(),
+                                event.getEventUrl(),
+                                event.getImageUrl()
+                        )).stream().toList();
     }
 
     private String uploadImg(MultipartFile file) {
