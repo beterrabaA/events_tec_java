@@ -1,6 +1,7 @@
 package com.events.api.controller;
 
 import com.events.api.domain.event.Event;
+import com.events.api.domain.event.EventDetailsDTO;
 import com.events.api.domain.event.EventRequestDTO;
 import com.events.api.domain.event.EventResponseDTO;
 import com.events.api.service.EventService;
@@ -45,6 +46,12 @@ public class EventController {
         List<EventResponseDTO> allEvents = this.eventService.getUpcomingEvents(page,size);
 
         return  ResponseEntity.ok(allEvents);
+    }
+
+    @GetMapping("/{eventId}")
+    public ResponseEntity<EventDetailsDTO> getEventDetails(@PathVariable UUID eventId) {
+        EventDetailsDTO eventDetails = this.eventService.getEventDetails(eventId);
+        return ResponseEntity.ok(eventDetails);
     }
 
     @GetMapping("/filter")
