@@ -1,7 +1,10 @@
 package com.events.api.service;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.events.api.domain.coupon.Coupon;
+import com.events.api.domain.coupon.CouponDTO;
 import com.events.api.domain.event.Event;
+import com.events.api.domain.event.EventDetailsDTO;
 import com.events.api.domain.event.EventRequestDTO;
 import com.events.api.domain.event.EventResponseDTO;
 import com.events.api.repository.EventRepository;
@@ -17,6 +20,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class EventService {
@@ -28,6 +32,9 @@ public class EventService {
 
     @Autowired
     private AddressService addressService;
+
+    @Autowired
+    private CouponService couponService;
 
     @Autowired
     private EventRepository repository;
@@ -102,6 +109,30 @@ public class EventService {
                                 event.getEventUrl(),
                                 event.getImageUrl()
                         )).stream().toList();
+    }
+
+    public EventDetailsDTO getEventDetails(UUID eventId) {
+        Event event = this.repository.findById(eventId).orElseThrow(() -> new IllegalArgumentException("event not found."));
+
+        List<Coupon> coupons = this.couponService.consultCoupons(eventId,new Date());
+
+        List<CouponDTO> couponDTOS = coupons
+                .stream().
+                map(coupon -> new CouponDTO(
+                        coupon.getCode(),
+                        coupon.getDiscount(),
+                        coupon.getValid())).toList();
+
+        return new EventDetailsDTO(event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDate(),
+                event.getAddress() != null ? event.getAddress().getCity() : "",
+                event.getAddress() != null ? event.getAddress().getUf() : "",
+                event.getEventUrl(),
+                event.getImageUrl(),
+                couponDTOS
+                );
     }
 
     private String uploadImg(MultipartFile file) {
